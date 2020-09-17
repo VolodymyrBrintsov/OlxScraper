@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <form method="POST">
+        {% csrf_token %}
+        <h1>Дополнительные параметры для поиска</h1>
+        <br>
+        {{form|crispy}}
+            <button class="btn btn-primary" type="submit">Поиск</button>
+        </div>
+    </form>
+{% endblock content %}
+{% block scripts %}
+{% endblock %}

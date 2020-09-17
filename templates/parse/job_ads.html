@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Самыe популярные и новые запросы: </h1>
+<table class="table" id="adds">
+    <hr>
+    <div class="row">
+        <div class="col-lg-12">
+            <a href="{{ table }}" style="width:100%" class="btn btn-primary", download="{{ table }}">Скачать Excel Файл</a>
+        </div>
+    </div>
+    <hr>
+        <thead>
+          <tr>
+            <th scope="col">Название Обьявления</th>
+            <th scope="col">Телефон</th>
+            <th scope="col">Рубрика</th>
+            <th scope="col">Имя</th>
+            <th scope="col">Дата Регистрации</th>
+            <th scope="col">Цена</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for job in jobs %}
+          <tr>
+            <td><a href="{{ job.link }}">{{ job.title }}</a></td>
+            <td>{{ job.phone }}</td>
+            <td>{{ job.heading }}</td>
+            <td>{{ job.name }}</td>
+            <td>{{ job.user_since }}</td>
+            <td>{{ job.price }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+{% endblock %}
+{% block scripts %}
+  <script>
+        $(document).ready( function () {
+            $('#adds').DataTable();
+        } );
+  </script>
+{% endblock %}

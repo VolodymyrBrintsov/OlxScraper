@@ -1,0 +1,4 @@
+[0916/230443.559:ERROR:process_reader_win.cc(123)] NtOpenThread: {Отказано в доступе} Процесс запросил доступ к объекту, но права на доступ не предоставлены. (0xc0000022)
+[0916/230443.561:ERROR:exception_snapshot_win.cc(99)] thread ID 2292 not found in process
+[0916/230443.587:ERROR:process_reader_win.cc(123)] NtOpenThread: {Отказано в доступе} Процесс запросил доступ к объекту, но права на доступ не предоставлены. (0xc0000022)
+[0916/230443.587:ERROR:exception_snapshot_win.cc(99)] thread ID 34204 not found in process
