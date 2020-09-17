@@ -1,4 +1,4 @@
-#!c:\users\vladimir\desktop\olx_parser\venv\scripts\python.exe
+#!C:\Users\1\Desktop\OlxScraper\venv\Scripts\python.exe
 # When the django-admin.py deprecation ends, remove this script.
 import warnings
 

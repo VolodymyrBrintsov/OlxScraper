@@ -11,13 +11,39 @@ from .models import JobAdds
 import pandas as pd
 from django.http import HttpResponse
 from io import BytesIO
+import os
+from django.template import loader
 
+def dump_excel(data_set):
+    df = pd.DataFrame.from_records(data_set).set_index('title').rename(
+        columns={
+            'phone': 'Телефон', 'heading': "Название рубрики", 'name': "Имя", 'user_since': "Дата регистрации",
+            'price': "Цена", 'link': "Ссылка", }).rename_axis("Название")
+    try:
+        df.drop('id', axis=1, inplace=True)
+    except:
+        pass
+    writer = pd.ExcelWriter('public/JobAdds.xlsx', engine='xlsxwriter')
+    df.to_excel(writer, sheet_name="Summary")
+    worksheet = writer.sheets["Summary"]
+    # set the column width as per your requirement
+    worksheet.set_column('A:A', 30)
+    worksheet.set_column('B:B', 30)
+    worksheet.set_column('C:C', 30)
+    worksheet.set_column('D:D', 30)
+    worksheet.set_column('E:E', 30)
+    worksheet.set_column('F:F', 30)
+    writer.save()
 # Create your views here.
 def home(request):
-    return render(request, 'base.html')
+    with open('README.md', 'r', encoding='UTF-8')as f:
+        content = f.read()
+    return render(request, 'base.html', {'content': content})
 
 def extract(request):
     if request.method == 'POST':
+        if 'excel' in request.POST:
+            file = open('public/JobAdds.xlsx')
         form = ExtraSearch(request.POST)
         if form.is_valid():
             # New option in order to get browser hide
@@ -99,12 +125,12 @@ def extract(request):
                         name = 'Имя не указано.'
 
                     jobs_list.append({'title': title.strip(),
-                                      'link': job_link.strip(),
                                       'phone': phones.strip(),
                                       'name': name.strip(),
                                       'heading': heading.strip(),
+                                      'user_since': user_since.strip(),
                                       'price': price,
-                                      'user_since': user_since.strip()
+                                      'link': job_link.strip(),
                                       })
                     try:
                         JobAdds.objects.get(title=title)
@@ -133,27 +159,17 @@ def extract(request):
                     link = None
 
             driver.close()
+            dump_excel(jobs_list)
             return render(request, 'parse/job_ads.html', {'jobs': jobs_list})
         return render(request, 'parse/extract.html', {'form': ExtraSearch(request.POST)})
     return render(request, 'parse/extract.html', {'form': ExtraSearch()})
 
 def all_adds(request):
-    with BytesIO() as b:
-        df = pd.DataFrame.from_records(JobAdds.objects.all().values()).set_index('title').drop('id', axis=1).rename(
-            columns={
-                'phone': 'Телефон', 'heading': "Название рубрики", 'name': "Имя", 'user_since': "Дата регистрации",
-                'price': "Цена", 'link': "Ссылка", }).rename_axis("Название")
-        writer = pd.ExcelWriter(b, engine='xlsxwriter')
-        df.to_excel(writer, sheet_name="Summary")
-        workbook = writer.book
-        worksheet = writer.sheets["Summary"]
-        # set the column width as per your requirement
-        worksheet.set_column('A:A', 30)
-        worksheet.set_column('B:B', 30)
-        worksheet.set_column('C:C', 30)
-        worksheet.set_column('D:D', 30)
-        worksheet.set_column('E:E', 30)
-        worksheet.set_column('F:F', 30)
-        writer.save()
-        return HttpResponse(b.getvalue(), content_type='application/vnd.ms-excel')
-    return render(request, 'parse/job_ads.html',{'jobs': JobAdds.objects.all()})
+    dump_excel(JobAdds.objects.all().values())
+    return render(request, 'parse/job_ads.html', {'jobs': JobAdds.objects.all()})
+
+def download(request):
+    with open('public/JobAdds.xlsx', 'rb') as file:
+        response = HttpResponse(file, content_type='application/ms-excel')
+        response['Content-Disposition'] = 'attachment; filename="JobAdds.xlsx"'
+        return response

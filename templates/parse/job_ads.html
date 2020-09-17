@@ -1,12 +1,15 @@
 {% extends 'base.html' %}
 {% block content %}
-<h1>Самыe популярные и новые запросы: </h1>
+<h1 xmlns="http://www.w3.org/1999/html">Самыe популярные и новые запросы: </h1>
 <table class="table" id="adds">
     <hr>
     <div class="row">
-        <div class="col-lg-12">
-            <a href="{{ table }}" style="width:100%" class="btn btn-primary", download="{{ table }}">Скачать Excel Файл</a>
-        </div>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="col-lg-12">
+                <a style="width:100%" class="btn btn-primary" href="{% url 'download' %}" name="excel">Скачать Excel файл</a>
+            </div>
+        </form>
     </div>
     <hr>
         <thead>
