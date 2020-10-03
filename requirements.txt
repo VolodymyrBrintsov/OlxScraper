@@ -19,7 +19,6 @@ portalocker==2.0.0
 psycopg2==2.8.6
 python-dateutil==2.8.1
 pytz==2020.1
-pypiwin32
 selenium==3.141.0
 six==1.15.0
 soupsieve==2.0.1
