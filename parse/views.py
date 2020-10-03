@@ -1,4 +1,7 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -6,16 +9,18 @@ from selenium.common.exceptions import NoSuchElementException, InvalidArgumentEx
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from bs4 import BeautifulSoup as sp
-from .forms import ExtraSearch
+from .forms import ExtraSearch, QuerySort
 from .models import JobAdds
 import pandas as pd
 from django.http import HttpResponse
 from io import BytesIO
 import os
+import time
 from django.template import loader
 
+#Help function to dump adds in excel file
 def dump_excel(data_set):
-    df = pd.DataFrame.from_records(data_set).set_index('title').rename(
+    df = pd.DataFrame.from_records(data_set).drop('time', axis=1).set_index('title').rename(
         columns={
             'phone': 'Телефон', 'heading': "Название рубрики", 'name': "Имя", 'user_since': "Дата регистрации",
             'price': "Цена", 'link': "Ссылка", }).rename_axis("Название")
@@ -34,21 +39,22 @@ def dump_excel(data_set):
     worksheet.set_column('E:E', 30)
     worksheet.set_column('F:F', 30)
     writer.save()
-# Create your views here.
+
+#Home page
 def home(request):
     with open('README.md', 'r', encoding='UTF-8')as f:
         content = f.read()
     return render(request, 'base.html', {'content': content})
 
+#Extract popular adds on Olx
+@login_required(login_url='login')
 def extract(request):
     if request.method == 'POST':
-        if 'excel' in request.POST:
-            file = open('public/JobAdds.xlsx')
         form = ExtraSearch(request.POST)
         if form.is_valid():
             # New option in order to get browser hide
             chrome_options = Options()
-            chrome_options.add_argument("--headless")
+            #chrome_options.add_argument("--headless")
 
             # Link
             link = "https://www.olx.ua/poltava"
@@ -66,7 +72,10 @@ def extract(request):
             page_counter = 1
             price_range = [int(num) for num in form.cleaned_data['price'].split('-')]
             from_price, to_price = price_range
-
+            heading = form.cleaned_data['heading']
+            driver.find_element(By.XPATH, "//a[contains(@class, 'select')]").click()
+            driver.find_element(By.XPATH, f"//a[text()='{heading}']").click()
+            time.sleep(3)
             # Iterationg through pages
             while link != None:
                 # Get the number of work
@@ -84,12 +93,12 @@ def extract(request):
                     #Price parsing
                     try:
                         price = job.find('p', {'class': 'price'}).text.strip()
-                        price_int = int(''.join(x for x in price if x.isdigit()))
+                        price_int = float(''.join(x for x in price if x.isdigit() or x=='.'))
                     except:
                         price = 'Не указана.'
 
                     if ((from_price or to_price) != 0):
-                        if from_price > int(price_int) or int(price_int)> to_price or price == 'Не указана.':
+                        if price == 'Не указана.' or from_price > price_int or price_int> to_price:
                             continue
 
                     # Link to the details
@@ -97,12 +106,17 @@ def extract(request):
                     driver.get(job_link)
 
                     # Finding a button to click in order to unblock telephone number
-                    phone_btn = driver.find_element_by_class_name('spoiler')
+                    try:
+                        phone_btn = driver.find_element_by_class_name('spoiler')
+                    except:
+                        continue
                     # Wait until telephone number gets clear
                     driver.execute_script("arguments[0].click();", phone_btn)
-                    wait = WebDriverWait(driver, 3)
-                    wait.until_not(ec.text_to_be_present_in_element((By.CLASS_NAME, 'contactitem'), 'x'))
-
+                    wait = WebDriverWait(driver, 10)
+                    try:
+                        wait.until_not(ec.text_to_be_present_in_element((By.CLASS_NAME, 'contactitem'), 'x'))
+                    except:
+                        continue
                     # Parse job link page
                     job_page = sp(driver.page_source, 'html.parser')
                     user_since = job_page.find('div', {'class': 'quickcontact__user-since'}).text
@@ -132,8 +146,9 @@ def extract(request):
                                       'price': price,
                                       'link': job_link.strip(),
                                       })
+                    #Try to find unique Add if no then add it to database
                     try:
-                        JobAdds.objects.get(title=title)
+                        JobAdds.objects.get(phone=phones.strip())
 
                     except (JobAdds.MultipleObjectsReturned, JobAdds.DoesNotExist):
                         JobAdds.objects.create(
@@ -155,7 +170,7 @@ def extract(request):
                     link = page_tree.find('a', {'class': '{page:'+str(page_counter)+'}'})['href']
                     driver.get(link)
                     driver.implicitly_wait(0.3)
-                except (NoSuchElementException, IndexError, InvalidArgumentException):
+                except (NoSuchElementException, IndexError, InvalidArgumentException, TypeError):
                     link = None
 
             driver.close()
@@ -164,12 +179,43 @@ def extract(request):
         return render(request, 'parse/extract.html', {'form': ExtraSearch(request.POST)})
     return render(request, 'parse/extract.html', {'form': ExtraSearch()})
 
+#View to see all adds in database
+@login_required(login_url='login')
 def all_adds(request):
+    if request.method == 'POST':
+        form = QuerySort(request.POST)
+        if form.is_valid():
+            time = form.cleaned_data['datetime']
+            if time != 'all':
+                dump_excel(JobAdds.objects.filter(time=time).values())
+                return render(request, 'parse/job_ads.html', {'jobs': JobAdds.objects.filter(time=time)})
+            dump_excel(JobAdds.objects.all().values())
+            return render(request, 'parse/job_ads.html', {'jobs': JobAdds.objects.all()})
     dump_excel(JobAdds.objects.all().values())
-    return render(request, 'parse/job_ads.html', {'jobs': JobAdds.objects.all()})
+    return render(request, 'parse/job_ads.html', {'form': QuerySort()})
 
+#View to download current excel file with adds
+@login_required(login_url='login')
 def download(request):
     with open('public/JobAdds.xlsx', 'rb') as file:
         response = HttpResponse(file, content_type='application/ms-excel')
         response['Content-Disposition'] = 'attachment; filename="JobAdds.xlsx"'
         return response
+
+def login_user(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+    else:
+        form = AuthenticationForm()
+        if request.method == 'POST':
+            form = AuthenticationForm(data=request.POST)
+            if form.is_valid():
+                login(request, form.user_cache)
+                return redirect('home')
+            return render(request, 'login.html', {'form': form})
+        return render(request, 'login.html', {'form': form})
+
+@login_required(login_url='login')
+def logout_user(request):
+    logout(request)
+    return redirect('login')

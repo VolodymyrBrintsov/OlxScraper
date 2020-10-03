@@ -25,6 +25,12 @@
                 <a class="navbar-brand" href="{% url 'home' %}">Главная</a>
                 <a class="navbar-brand" href="{% url 'extract' %}">Сбор Актуальных Обьявлений</a>
                 <a class="navbar-brand" href="{% url 'all_adds' %}">Все Обьявления</a>
+                {% if user.is_authenticated %}
+                    <p class="navbar-brand">Hi, {{request.user}}</p>
+                    <a class="navbar-brand" href="{% url 'logout' %}">Разлогинится</a>
+                {% else %}
+                    <a class="navbar-brand" href="{% url 'login' %}">Логин</a>
+                {% endif %}
             </div>
         </nav>
 
