@@ -61,7 +61,7 @@ def extract(request):
             options.add_argument('--no-sandbox')
             options.add_argument('--remote-debugging-port=9222')
 
-            driver = webdriver.Chrome(executable_path=os.path.abspath('webdriver'), chrome_options=options)
+            driver = webdriver.Chrome(executable_path=os.path.abspath('chromedriver.exe'), chrome_options=options)
             driver.get(link)
 
             jobs_list = []
