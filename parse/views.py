@@ -49,15 +49,18 @@ def extract(request):
     if request.method == 'POST':
         form = ExtraSearch(request.POST)
         if form.is_valid():
-            # New option in order to get browser hide
+            GOOGLE_CHROME_PATH = '/app/.apt/usr/bin/google_chrome'
+            CHROMEDRIVER_PATH = '/app/.chromedriver/bin/chromedriver'
             chrome_options = Options()
-            #chrome_options.add_argument("--headless")
-
+            # chrome_options.add_argument("--headless")
+            chrome_options.add_argument('--disable-gpu')
+            chrome_options.add_argument('--no-sandbox')
+            chrome_options.binary_location = GOOGLE_CHROME_PATH
             # Link
             link = "https://www.olx.ua/poltava"
 
             # Open scraper
-            driver = webdriver.Chrome(options=chrome_options)
+            driver = webdriver.Chrome(execution_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
             driver.get(link)
 
             jobs_list = []
