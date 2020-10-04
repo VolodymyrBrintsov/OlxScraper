@@ -11,7 +11,7 @@
     <button class="btn btn-primary" type="submit">Поиск</button>
 </form>
 {% endif %}
-{% if jobs %}
+{% if jobs|length != 0 %}
 <h1 xmlns="http://www.w3.org/1999/html">Самыe популярные и новые запросы: </h1>
 <table class="table" id="adds">
     <hr>

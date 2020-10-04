@@ -21,7 +21,7 @@ from django.template import loader
 
 #Help function to dump adds in excel file
 def dump_excel(data_set):
-    df = pd.DataFrame.from_records(data_set).drop('time', axis=1).set_index('title').rename(
+    df = pd.DataFrame.from_records(data_set).drop('time', axis=0).set_index('title').rename(
         columns={
             'phone': 'Телефон', 'heading': "Название рубрики", 'name': "Имя", 'user_since': "Дата регистрации",
             'price': "Цена", 'link': "Ссылка", }).rename_axis("Название")
@@ -185,11 +185,16 @@ def all_adds(request):
         if form.is_valid():
             time = form.cleaned_data['datetime']
             if time != 'all':
-                dump_excel(JobAdds.objects.filter(time=time).values())
+                try:
+                    dump_excel(JobAdds.objects.filter(time=time).values())
+                except:
+                    pass
                 return render(request, 'parse/job_ads.html', {'jobs': JobAdds.objects.filter(time=time)})
-            dump_excel(JobAdds.objects.all().values())
+            try:
+                dump_excel(JobAdds.objects.all().values())
+            except:
+                pass
             return render(request, 'parse/job_ads.html', {'jobs': JobAdds.objects.all()})
-    dump_excel(JobAdds.objects.all().values())
     return render(request, 'parse/job_ads.html', {'form': QuerySort()})
 
 #View to download current excel file with adds
