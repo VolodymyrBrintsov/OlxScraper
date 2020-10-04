@@ -158,7 +158,7 @@ def extract(request):
                             price = price,
                             user_since = user_since.strip()
                             )
-                        jobs_counter += 1
+                    jobs_counter += 1
                 # Link to another page
                 try:
                     if jobs_counter == jobs_num:
