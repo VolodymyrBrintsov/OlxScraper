@@ -25,7 +25,7 @@ def scraper():
 
     jobs_list = []
     #Number of ads that user want ro parse
-    jobs_num = int(150)
+    jobs_num = int(100)
     #Counter of jobs that have been alreade parced
     jobs_counter = 0
     #Page counter (we start from page 1)
