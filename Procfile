@@ -1,2 +1,1 @@
-web: gunicorn olx_parser.wsgi
-worker: python main.py
+web: gunicorn olx_parser.wsgi --log-level=debug --timeout=5
