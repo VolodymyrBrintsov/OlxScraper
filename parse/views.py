@@ -60,7 +60,7 @@ def extract(request):
             link = "https://www.olx.ua/poltava"
 
             # Open scraper
-            driver = webdriver.Chrome(execution_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
+            driver = webdriver.Chrome(chrome_options=chrome_options)
             driver.get(link)
 
             jobs_list = []
