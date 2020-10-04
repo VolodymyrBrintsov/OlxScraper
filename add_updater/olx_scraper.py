@@ -25,12 +25,12 @@ def scraper():
 
     jobs_list = []
     #Number of ads that user want ro parse
-    jobs_num = int(50)
+    jobs_num = int(150)
     #Counter of jobs that have been alreade parced
     jobs_counter = 0
     #Page counter (we start from page 1)
     page_counter = 1
-    price_range = [500, 999999999]
+    price_range = [0, 999999999]
     from_price, to_price = price_range
     # Iterationg through pages
     while link != None:
@@ -116,8 +116,7 @@ def scraper():
                     price = price,
                     user_since = user_since.strip()
                     )
-
-            jobs_counter += 1
+                jobs_counter += 1
         # Link to another page
         try:
             if jobs_counter == jobs_num:
