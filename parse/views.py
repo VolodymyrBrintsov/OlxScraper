@@ -21,7 +21,7 @@ from django.template import loader
 
 #Help function to dump adds in excel file
 def dump_excel(data_set):
-    df = pd.DataFrame.from_records(data_set).drop('time', axis=0).set_index('title').rename(
+    df = pd.DataFrame.from_records(data_set).drop('time', axis=1).set_index('title').rename(
         columns={
             'phone': 'Телефон', 'heading': "Название рубрики", 'name': "Имя", 'user_since': "Дата регистрации",
             'price': "Цена", 'link': "Ссылка", }).rename_axis("Название")
