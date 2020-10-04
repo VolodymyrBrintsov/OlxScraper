@@ -42,10 +42,7 @@ def dump_excel(data_set):
 
 #Home page
 def home(request):
-    with open('README.md', 'r', encoding='UTF-8')as f:
-        content = f.read()
-    return render(request, 'base.html', {'content': content})
-
+    return render(request, 'base.html')
 #Extract popular adds on Olx
 @login_required(login_url='login')
 def extract(request):

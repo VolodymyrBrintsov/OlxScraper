@@ -16,8 +16,11 @@ class ExtraSearch(forms.Form):
         return jobs_num
 
 class QuerySort(forms.Form):
-    times = set([i.time for i in JobAdds.objects.all()])
     choices = [('', 'Выбери дату: '), ('all', 'Собранные за все время')]
-    for time in times:
-        choices.append((time, time))
+    try:
+        times = set([i.time for i in JobAdds.objects.all()])
+        for time in times:
+            choices.append((time, time))
+    except:
+        pass
     datetime = forms.ChoiceField(choices= tuple(choices), required=True, label='Выберите все дату что вас интересует: ')

@@ -7,11 +7,15 @@ from selenium.webdriver.support import expected_conditions as ec
 from bs4 import BeautifulSoup as sp
 from parse.models import JobAdds
 import datetime
+GOOGLE_CHROME_PATH = '/app/.apt/usr/bin/google_chrome'
+CHROMEDRIVER_PATH = '/app/.chromedriver/bin/chromedriver'
 
 def scraper():
     chrome_options = Options()
     #chrome_options.add_argument("--headless")
-
+    chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.binary_location = GOOGLE_CHROME_PATH
     # Link
     link = "https://www.olx.ua/poltava"
 
