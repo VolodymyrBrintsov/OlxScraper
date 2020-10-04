@@ -1,6 +1,5 @@
 from django import forms
 from django.core.validators import ValidationError
-from .models import JobAdds
 
 class ExtraSearch(forms.Form):
     jobs_num = forms.ChoiceField(choices=(('', 'Укажи количество обьявлений.'), ('1', '1'), ('5', '5'), ('10', '10'), ('25', '25'), ('100', '100'), ('500', '500')), label='Количество обьявлений:')
@@ -16,7 +15,7 @@ class ExtraSearch(forms.Form):
         return jobs_num
 
 class QuerySort(forms.Form):
-    times = set([i.time for i in JobAdds.objects.all()])
+    times = set()
     choices = [('', 'Выбери дату: '), ('all', 'Собранные за все время')]
     for time in times:
         choices.append((time, time))
