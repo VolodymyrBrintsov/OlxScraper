@@ -1,1 +1,1 @@
-web: gunicorn olx_parser.wsgi --log-level debug
+web: gunicorn olx_parser.wsgi --log-level debug --timeout 120
